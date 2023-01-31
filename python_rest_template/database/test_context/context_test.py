@@ -21,9 +21,9 @@ def test_context_provides_database_that_is_not_main_db():
     assert R.path(["credentials", "database"], db_context) != environ["TARGET_DB"]
 
     # db connection in db_context is actually to the one specified by 'database' in 'credentials'
-    assert R.pipe(query_one_element(db_context), R.head)(
-        "SELECT current_database()"
-    ) == R.path(["credentials", "database"], db_context)
+    assert R.pipe(query_one_element(db_context), R.head)("SELECT current_database()") == R.path(
+        ["credentials", "database"], db_context
+    )
 
     teardown_test_db_context(db_context)
 
@@ -44,6 +44,6 @@ def test_teardown_test_context_deletes_working_db():
 
 def test_fixture_provides_test_context_with_migrations_applied(db_test_context):
 
-    assert "test_data" in R.pipe(query_one_element(db_test_context), R.head)(
+    assert "test-data" in R.pipe(query_one_element(db_test_context), R.head)(
         "SELECT migration_id FROM public._yoyo_migration"
     )

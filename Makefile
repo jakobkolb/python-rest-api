@@ -35,7 +35,7 @@ this:
 	poetry run pytest -f -k='${test}'
 
 lint:
-	poetry run flake8 decilo_core/ && poetry run black decilo_core/ --check
+	poetry run flake8 python_rest_template/ && poetry run black python_rest_template/ --check
 
 
 add-migration:

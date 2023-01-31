@@ -72,9 +72,9 @@ def _open_cursor_and_execute_sql_and_fetch_one(
 def _open_cursor_and_execute_sql_and_fetch_all(
     context: DBContext, sql: Union[str, SQL, Composed]
 ) -> Cursor:
-    return R.use_with(
-        _execute_sql_on_cursor_and_fetch("fetchall"), [open_cursor, R.identity]
-    )(context, sql)
+    return R.use_with(_execute_sql_on_cursor_and_fetch("fetchall"), [open_cursor, R.identity])(
+        context, sql
+    )
 
 
 def _cleanup_connection_and_reraise_error(error, context, *_):
@@ -108,9 +108,7 @@ def _commit_changes(context: DBContextWithCursor) -> DBContextWithCursor:
 
 @R.curry
 def create_database(context: DBContext) -> DBContext:
-    execute_sql(
-        context, f"CREATE DATABASE {R.path(['credentials', 'database'], context)};"
-    )
+    execute_sql(context, f"CREATE DATABASE {R.path(['credentials', 'database'], context)};")
     return context
 
 

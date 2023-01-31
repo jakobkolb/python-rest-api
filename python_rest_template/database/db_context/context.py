@@ -2,7 +2,7 @@ import os
 import psycopg2
 import ramda as R
 
-from psycopg2.extensions import connection
+from psycopg2.extensions import connection  # noqa: F401
 
 from python_rest_template.database.types import (
     Connection,
@@ -64,9 +64,7 @@ def open_cursor(context: DBContext) -> DBContextWithCursor:
         {
             "credentials": R.prop("credentials"),
             "connection": R.prop("connection"),
-            "cursor": R.pipe(
-                R.prop("connection"), lambda conn: conn.cursor(cursor_factory=Cursor)
-            ),
+            "cursor": R.pipe(R.prop("connection"), lambda conn: conn.cursor(cursor_factory=Cursor)),
         }
     )(context)
 
@@ -78,6 +76,4 @@ def close_cursor(context: DBContextWithCursor) -> DBContext:
     )(context)
 
 
-update_connection_in_context = R.pipe(
-    R.prop("credentials"), _create_context_from_credentials
-)
+update_connection_in_context = R.pipe(R.prop("credentials"), _create_context_from_credentials)

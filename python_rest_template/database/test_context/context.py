@@ -31,9 +31,7 @@ def teardown_test_db_context(context: DBContext) -> DBContext:
     context["connection"].close()
 
     new_context = _create_db_context_with_autocommit()
-    execute_sql(
-        new_context, f"DROP DATABASE {R.path(['credentials', 'database'], context)};"
-    )
+    execute_sql(new_context, f"DROP DATABASE {R.path(['credentials', 'database'], context)};")
     new_context["connection"].close()
     return context
 
@@ -49,9 +47,7 @@ def create_test_db_context() -> DBContext:
 
 
 def _create_random_db_name(context: DBContext) -> DBContext:
-    return R.assoc_path(["credentials", "database"], _get_random_string(8).lower())(
-        context
-    )
+    return R.assoc_path(["credentials", "database"], _get_random_string(8).lower())(context)
 
 
 def _get_random_string(length: int) -> str:

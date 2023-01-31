@@ -58,9 +58,7 @@ def get_model_by_key_value(
 
 
 def _get_keys_from_pydantic_model(model) -> List[str]:
-    return R.pipe(
-        lambda x: x.__dict__, R.prop("__fields__"), R.invoker(0, "keys"), list
-    )(model)
+    return R.pipe(lambda x: x.__dict__, R.prop("__fields__"), R.invoker(0, "keys"), list)(model)
 
 
 def try_to_convert_to_dict(model: BaseModel) -> dict:
