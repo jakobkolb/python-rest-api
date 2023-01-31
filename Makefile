@@ -6,7 +6,7 @@ install:
 	poetry install
 
 setup-db:
-	docker compose up -d && bash wait-for-healthy-container.sh db 30
+	docker compose -f docker/docker-compose.yaml up -d && bash docker/wait-for-healthy-container.sh db 30
 	make migrate
 
 dev:
@@ -14,11 +14,11 @@ dev:
 	poetry run uvicorn python_rest_template.main:app --reload
 
 build:
-	docker build -t ${APP_IMAGE_TAG} .
+	docker build -t ${APP_IMAGE_TAG} . -f docker/Dockerfile
 
 run:
 	make build
-	docker compose -f docker-compose.yaml -f docker-compose.integration.yaml up -d  && bash wait-for-healthy-container.sh app 30
+	docker compose -f docker/docker-compose.yaml -f docker/docker-compose.integration.yaml up -d  && bash docker/wait-for-healthy-container.sh app 30
 	make migrate
 
 cleanup:
