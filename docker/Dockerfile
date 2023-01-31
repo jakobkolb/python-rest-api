@@ -6,10 +6,10 @@ RUN pip install 'poetry'
 WORKDIR /code
 
 # Copy over the project files
-COPY ../pyproject.toml /code/pyproject.toml
-COPY ../poetry.lock /code/poetry.lock
-COPY ../README.md /code/README.md
-COPY ../python_rest_template /code/python_rest_template
+COPY ./pyproject.toml /code/pyproject.toml
+COPY ./poetry.lock /code/poetry.lock
+COPY ./README.md /code/README.md
+COPY ./python_rest_template /code/python_rest_template
 
 # Install dependencies without creating a virtual environment (we're isolating dependencies in the container)
 RUN poetry config virtualenvs.create false --local
