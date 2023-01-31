@@ -15,7 +15,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.10
+          python-version: '3.10'
       - name: install poetry
         uses: snok/install-poetry@v1
         with:
@@ -24,7 +24,7 @@ jobs:
           version: latest
       - name: Load Poetry Cache
         id: cached-poetry-dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: .venv
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
@@ -43,15 +43,23 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.10
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v2
+          python-version: '3.10'
+      - name: install poetry
+        uses: snok/install-poetry@v1
         with:
-          path: ~/.cache/pypoetry/virtualenvs
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          version: latest
+      - name: Load Poetry Cache
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
       - name: Setup
-        run: make setup
+        run: make setup-db
       - name: Test with pytest
         run: make test
 
@@ -64,14 +72,20 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.10
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v2
+          python-version: '3.10'
+      - name: install poetry
+        uses: snok/install-poetry@v1
         with:
-          path: ~/.cache/pypoetry/virtualenvs
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
-      - name: Setup
-        run: make setup
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          version: latest
+      - name: Load Poetry Cache
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
       - name: Test with pytest
         run: make lint
