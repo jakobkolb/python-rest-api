@@ -2,7 +2,9 @@ name: Publish App image
 
 on:
   push:
-    branches: [main]
+    tags:
+      - 'v*'
+#    branches: [main]
   pull_request:
     branches: [main]
 
@@ -18,7 +20,7 @@ jobs:
         run: docker build -t python-rest-example:${{ github.ref_name }} . -f docker/Dockerfile
 
       - name: Publish docker image to github packages
-#        if: github.event_name == 'schedule' || github.event_name == 'push'
+        if: github.event_name == 'schedule' || github.event_name == 'push'
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker tag python-rest-example:${{ github.ref_name }} ghcr.io/${{ github.repository_owner }}/python-rest-example:${{ github.ref_name }}
