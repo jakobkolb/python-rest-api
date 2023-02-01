@@ -6,11 +6,11 @@ services:
     container_name: "app"
     image: "${APP_IMAGE_TAG}"
     environment:
-      TARGET_DB_HOST: "db"
-      TARGET_DB_USER: "${TARGET_DB_USER}"
-      TARGET_DB_PW: "${TARGET_DB_PW}"
-      TARGET_DB: "${TARGET_DB}"
-      TARGET_DB_PORT: "5432"
+      DB_HOSTNAME: "db"
+      DB_USER: "${DB_USER}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      DB_NAME: "${DB_NAME}"
+      DB_PORT: "5432"
     depends_on:
       - db
     restart: always

@@ -6,13 +6,13 @@ services:
     container_name: "db"
     image: postgres:13
     environment:
-      POSTGRES_USER: "${TARGET_DB_USER}"
-      POSTGRES_PASSWORD: "${TARGET_DB_PW}"
-      POSTGRES_DB: "${TARGET_DB}"
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: "${DB_NAME}"
     volumes:
       - db-volume:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${TARGET_DB_USER}", "-d", "${TARGET_DB}"]
+      test: ["CMD", "pg_isready", "-U", "${DB_USER}", "-d", "${DB_NAME}"]
       interval: 5s
       retries: 5
     restart: always

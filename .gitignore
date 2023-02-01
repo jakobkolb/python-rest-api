@@ -1,2 +1,6 @@
 .idea
 .pytest_cache
+.vscode
+```
+# ignore __pycache__ folder everywhere
+__pycache__/
