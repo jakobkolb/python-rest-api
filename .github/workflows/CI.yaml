@@ -63,6 +63,35 @@ jobs:
       - name: Test with pytest
         run: make test
 
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: install poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          version: latest
+      - name: Load Poetry Cache
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+      - name: Setup
+        run: make run
+      - name: Run integration tests
+        run: make integration-test
+
   code-checks:
     runs-on: ubuntu-latest
     needs: setup

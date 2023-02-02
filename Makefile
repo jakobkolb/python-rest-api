@@ -25,14 +25,17 @@ run-interactive:
 	docker compose -f docker/docker-compose.yaml -f docker/docker-compose.integration.yaml up
 
 teardown:
-	docker compose -f docker/docker-compose.yaml -f docker/docker-compose.integration.yaml down
+	docker compose -f docker/docker-compose.yaml -f docker/docker-compose.integration.yaml down -v
 
 cleanup:
 	docker rm -f $(docker ps -a -q) && \
  	docker volume rm $(docker volume ls -q)
 
 test:
-	poetry run pytest
+	poetry run pytest -k='not integration_test'
+
+integration-test:
+	poetry run pytest -k='integration_test'
 
 watch:
 	poetry run pytest -f --ff -x --color=yes

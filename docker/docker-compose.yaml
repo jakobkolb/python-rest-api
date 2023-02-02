@@ -13,7 +13,7 @@ services:
       - db-volume:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "${DB_USER}", "-d", "${DB_NAME}"]
-      interval: 5s
+      interval: 10s
       retries: 5
     restart: always
     ports:

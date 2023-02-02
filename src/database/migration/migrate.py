@@ -1,4 +1,6 @@
 import pathlib
+import sys
+from psycopg2 import OperationalError
 from logging import getLogger, WARNING
 
 import ramda as R
@@ -25,12 +27,14 @@ def get_path_of_file() -> str:
     return str(pathlib.Path(__file__).parent.resolve())
 
 
-if __name__ == "__main__":
-    from src.database.db_context import (
-        create_db_context,
-        teardown_db_context,
-    )
+def migrate_all():
+    from src.database.db_context import create_db_context, teardown_db_context
 
-    context = create_db_context()
-    migrate(context)
-    teardown_db_context(context)
+    try:
+        context = create_db_context()
+        migrate(context)
+    except OperationalError as e:
+        print(str(e))
+        sys.exit(1)
+    finally:
+        teardown_db_context(context)

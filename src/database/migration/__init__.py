@@ -1,3 +1,3 @@
-from .migrate import migrate
+from .migrate import migrate, migrate_all
 
-__all__ = ["migrate"]
+__all__ = ["migrate", "migrate_all"]
