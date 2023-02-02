@@ -1,0 +1,97 @@
+# helm chart for a postgres database
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  ports:
+      - port: 5432
+  selector:
+      app: postgres
+      tier: backend
+      release: postgres
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+    serviceName: postgres
+    replicas: 1
+    selector:
+        matchLabels:
+          app: postgres
+          tier: backend
+          release: postgres
+    template:
+        metadata:
+          labels:
+              app: postgres
+              tier: backend
+              release: postgres
+        spec:
+          containers:
+            - name: postgres
+              image: postgres:9.6
+              env:
+              - name: POSTGRES_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres
+                    key: postgres-password
+              - name: POSTGRES_USER
+                valueFrom:
+                  configMapKeyRef:
+                    key: user
+                    name: postgres
+              - name: POSTGRES_DB
+                valueFrom:
+                  configMapKeyRef:
+                    key: database
+                    name: postgres
+              - name: POSTGRES_HOST
+                valueFrom:
+                  configMapKeyRef:
+                    key: host
+                    name: postgres
+
+              ports:
+              - containerPort: 5432
+                name: postgres
+              volumeMounts:
+              - name: postgres-persistent-storage
+                mountPath: /var/lib/postgresql/data
+    volumeClaimTemplates:
+    - metadata:
+        name: postgres-persistent-storage
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+            requests:
+              storage: 1Gi
+---
+# generate a secret for the postgres password
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres
+type: Opaque
+data:
+  # retrieve the secret data using lookup function and when not exists, return an empty dictionary / map as result
+  {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace "jwt-secret") | default dict }}
+  {{- $secretData := (get $secretObj "data") | default dict }}
+  # set $jwtSecret to existing secret data or generate a random one when not exists
+  {{- $jwtSecret := (get $secretData "jwt-secret") | default (randAlphaNum 32 | b64enc) }}
+  postgres-password: {{ $jwtSecret | quote }}
+---
+# configmap for the postgres database
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres
+data:
+  database: "postgres"
+  host: "postgres"
+  user: "postgres"
