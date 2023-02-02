@@ -39,7 +39,7 @@ spec:
               - name: POSTGRES_PASSWORD
                 valueFrom:
                   secretKeyRef:
-                    name: postgres
+                    name: postgres-password
                     key: postgres-password
               - name: POSTGRES_USER
                 valueFrom:
@@ -76,15 +76,15 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: postgres
+  name: postgres-password
 type: Opaque
 data:
   # retrieve the secret data using lookup function and when not exists, return an empty dictionary / map as result
-  {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace "jwt-secret") | default dict }}
+  {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace "postgres-password") | default dict }}
   {{- $secretData := (get $secretObj "data") | default dict }}
   # set $jwtSecret to existing secret data or generate a random one when not exists
-  {{- $jwtSecret := (get $secretData "jwt-secret") | default (randAlphaNum 32 | b64enc) }}
-  postgres-password: {{ $jwtSecret | quote }}
+  {{- $postgresSecret := (get $secretData "postgres-password") | default (randAlphaNum 32 | b64enc) }}
+  postgres-password: {{ $postgresSecret | quote }}
 ---
 # configmap for the postgres database
 apiVersion: v1
@@ -95,3 +95,4 @@ data:
   database: "postgres"
   host: "postgres"
   user: "postgres"
+  port: "5432"

@@ -33,26 +33,31 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: POSTGRES_PASSWORD
+            - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres
+                  name: postgres-password
                   key: postgres-password
-            - name: POSTGRES_USER
+            - name: DB_USER
               valueFrom:
                 configMapKeyRef:
                   key: user
                   name: postgres
-            - name: POSTGRES_DB
+            - name: DB_NAME
               valueFrom:
                 configMapKeyRef:
                   key: database
                   name: postgres
-            - name: POSTGRES_HOST
+            - name: DB_HOSTNAME
               valueFrom:
                 configMapKeyRef:
                   key: host
                   name: postgres
+            - name: DB_PORT
+              valueFrom:
+                  configMapKeyRef:
+                    key: port
+                    name: postgres
           ports:
             - name: http
               containerPort: 80
