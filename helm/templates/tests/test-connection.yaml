@@ -1,3 +1,4 @@
+# test connection to API
 apiVersion: v1
 kind: Pod
 metadata:
