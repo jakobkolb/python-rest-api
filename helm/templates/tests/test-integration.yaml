@@ -1,0 +1,20 @@
+# Run integration tests
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ include "helm.fullname" . }}-integration-tests"
+  labels:
+    {{- include "helm.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  template:
+    spec:
+      containers:
+        - name: integration-tests
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ['poetry', 'run', 'pytest', "-k=integration_test"]
+          env:
+          - name: API_HOSTNAME
+            value: '{{ include "helm.fullname" . }}:{{ .Values.service.port }}'
+      restartPolicy: Never

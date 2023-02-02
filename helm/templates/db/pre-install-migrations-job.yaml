@@ -1,0 +1,55 @@
+# run database migrations before starting the server
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-migrate
+  labels:
+      app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+      helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+  annotations:
+    "helm.sh/hook": post-install, post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ .Release.Name }}-migrate
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          name: {{ .Release.Name }}-migrate
+          command: ["migrate"]
+          
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-password
+                  key: postgres-password
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  key: user
+                  name: postgres
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: database
+                  name: postgres
+            - name: DB_HOSTNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: host
+                  name: postgres
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: port
+                  name: postgres
