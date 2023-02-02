@@ -16,5 +16,5 @@ spec:
           command: ['poetry', 'run', 'pytest', "-k=integration_test"]
           env:
           - name: API_HOSTNAME
-            value: '{{ include "helm.fullname" . }}:{{ .Values.service.port }}'
+            value: 'http://{{ include "helm.fullname" . }}:{{ .Values.service.port }}'
       restartPolicy: Never
