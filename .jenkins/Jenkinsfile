@@ -6,6 +6,7 @@ pipeline {
             steps {
                 sh 'rm -rf python-rest-api'
                 sh 'git clone https://github.com/jakobkolb/python-rest-api.git'
+                echo "BRANCH_NAME: ${env.GIT_BRANCH.split("/")[1]}"
             }
         }
         stage('Setup Tooling'){
