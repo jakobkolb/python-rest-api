@@ -1,0 +1,82 @@
+pipeline {
+    // Assuming python 3.10 with pip and venv as well as and docker / docker compose are available on the main node.
+    agent any
+    stages {
+        stage('Setup Tooling'){
+            environment {
+                // put poetry executable in PATH
+                PATH = "${env.JENKINS_HOME}/.local/bin:${env.PATH}"
+                HOME = "${env.JENKINS_HOME}"
+            }
+            steps {
+                // Check that docker is available
+                sh 'docker run hello-world'
+
+                // Setup helm
+                sh '''
+                    curl -sSL https://get.helm.sh/helm-v3.7.0-linux-amd64.tar.gz | tar -xzO linux-amd64/helm > helm
+                    chmod +x helm
+                    mv helm $HOME/.local/bin
+                    helm version
+                '''
+
+                // create virtualenv in directory and activate it
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                '''
+
+                // install chart testing and dependencies
+                sh '''
+                pip install yamale yamllint
+                curl -sSLo ct.tar.gz "https://github.com/helm/chart-testing/releases/download/v3.7.1/chart-testing_3.7.1_linux_amd64.tar.gz"
+                tar -xzf ct.tar.gz
+                mv ct $HOME/.local/bin
+                rm -rf $HOME/.ct && mv etc $HOME/.ct
+                ct version
+                '''
+
+                // install kubectl
+                sh '''
+                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                chmod +x ./kubectl
+                mv ./kubectl $HOME/.local/bin
+                kubectl version --client
+                '''
+
+                // install kind
+                sh '''
+                curl -Lo ./kind "https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64"
+                chmod +x ./kind
+                mv ./kind $HOME/.local/bin
+                kind version
+                '''
+            }
+        }
+        stage('Linting') {
+            environment {
+                PATH = "${env.JENKINS_HOME}/.local/bin:${env.PATH}"
+                HOME = "${env.JENKINS_HOME}"
+            }
+            steps {
+                sh 'ct lint --all --chart-dirs charts'
+            }
+        }
+        stage('Testing') {
+            environment {
+                PATH = "${env.JENKINS_HOME}/.local/bin:${env.PATH}"
+                HOME = "${env.JENKINS_HOME}"
+            }
+            steps {
+            // setup kind cluster
+                sh 'kind create cluster'
+                sh 'ct install --all --chart-dirs charts'
+            }
+        }
+    }
+    post {
+        always {
+                sh '$HOME/.local/bin/kind delete cluster'
+        }
+    }
+}

@@ -2,13 +2,6 @@ pipeline {
     // Assuming python 3.10 and docker / docker compose are available on the main node.
     agent any
     stages {
-        stage('Checkout Source') {
-            steps {
-                sh 'rm -rf python-rest-api'
-                sh 'git clone https://github.com/jakobkolb/python-rest-api.git'
-                echo "BRANCH_NAME: ${env.GIT_BRANCH.split("/")[1]}"
-            }
-        }
         stage('Setup Tooling'){
             steps {
                 // Setup poetry
@@ -24,6 +17,7 @@ pipeline {
             }
             steps {
                 dir('python-rest-api') {
+                    sh 'ls -la'
                     sh 'echo $PATH'
                     sh 'make install'
                     sh 'make setup-db'
@@ -37,6 +31,7 @@ pipeline {
         always {
             dir('python-rest-api') {
                 sh 'make teardown'
+                sh 'git clean -fdx'
             }
         }
     }
