@@ -1,4 +1,6 @@
-This is a template repository for building containerized REST API services in python using fastapi, postgres and docker.
+This is a template repository for building containerized REST API services to be deployed on Kubernetes.
+
+Built in python using fastapi, postgres, docker and helm.
 
 Dependencies are managed using poetry and docker-compose.
 
