@@ -1,41 +1,86 @@
+// Jenkinsfile executing in two containers on the same node
 pipeline {
     // Assuming python 3.10 and docker / docker compose are available on the main node.
-    agent any
-    stages {
-        stage('Checkout Source') {
-            steps {
-                sh 'rm -rf python-rest-api'
-                sh 'git clone https://github.com/jakobkolb/python-rest-api.git'
+    agent {
+        kubernetes {
+            defaultContainer 'python'
+            yaml """
+                apiVersion: v1
+                kind: Pod
+                metadata:
+                  labels:
+                    jenkins: build-node
+                spec:
+                    containers:
+                    - name: python
+                      image: python:3.10
+                      command:
+                      - cat
+                      tty: true
+                      env:
+                      - name: http_proxy
+                        value: http://10.15.156.29:8020
+                      - name: https_proxy
+                        value: http://10.15.156.29:8020
+                      - name: NO_PROXY
+                        value: localhost
+                      - name: DB_PASSWORD
+                        value: password
+                      - name: DB_USER
+                        value: user
+                      - name: DB_NAME
+                        value: test_db
+                      - name: DB_HOSTNAME
+                        value: localhost
+                      - name: DB_PORT
+                        value: 5432
+                      ports:
+                      - containerPort: 8080
+                    - name: postgres
+                      image: postgres:latest
+                      tty: true
+                      env:
+                      - name: POSTGRES_PASSWORD
+                        value: password
+                      - name: POSTGRES_USER
+                        value: user
+                      - name: POSTGRES_DB
+                        value: test_db
+                      ports:
+                      - containerPort: 5432
+                      readinessProbe:
+                        exec:
+                          command:
+                          - pg_isready
+                          - -U
+                          - user
+                    restartPolicy: Never
+                """
             }
-        }
-        stage('Setup Tooling'){
+    }
+    stages {
+        stage('Setup'){
             steps {
                 // Setup poetry
                 sh 'curl -sSL https://install.python-poetry.org | python3 -'
-                // Check that docker is available
-                sh 'docker run hello-world'
+                // Check poetry version
+                sh '/root/.local/bin/poetry --version'
+                // Checkout the code
+                checkout scm
+                // Install dependencies
+                sh '/root/.local/bin/poetry install'
+                // 'run database migrations'
+                sh '/root/.local/bin/poetry run yoyo apply --batch --no-config-file --database postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOSTNAME}/${DB_NAME} python_rest_template/database/migration/migration_files'
+
             }
         }
         stage('Test and lint') {
-            environment {
-                // put poetry executable in PATH
-                PATH = "${env.JENKINS_HOME}/.local/bin:${env.PATH}"
-            }
             steps {
-                dir('python-rest-api') {
-                    sh 'echo $PATH'
-                    sh 'make install'
-                    sh 'make setup-db'
-                    sh 'make lint'
-                    sh 'make test'
-                }
-            }
-        }
-    }
-    post {
-        always {
-            dir('python-rest-api') {
-                sh 'make teardown'
+                sh '/root/.local/bin/poetry --version'
+                // Run linting
+                sh '/root/.local/bin/poetry run flake8'
+                // Run tests
+                sh '/root/.local/bin/poetry run pytest -k="not integration_test"'
             }
         }
     }
