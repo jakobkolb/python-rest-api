@@ -13,7 +13,7 @@ pipeline {
                 spec:
                     containers:
                     - name: python
-                      image: python:3.10
+                      image: ghcr.io/rocs-org/python-test-environment:latest
                       command:
                       - cat
                       tty: true
@@ -61,26 +61,22 @@ pipeline {
     stages {
         stage('Setup'){
             steps {
-                // Setup poetry
-                sh 'curl -sSL https://install.python-poetry.org | python3 -'
-                // Check poetry version
-                sh '/root/.local/bin/poetry --version'
+                sh 'poetry --version'
                 // Checkout the code
                 checkout scm
                 // Install dependencies
-                sh '/root/.local/bin/poetry install'
+                sh 'make install'
                 // 'run database migrations'
-                sh '/root/.local/bin/poetry run yoyo apply --batch --no-config-file --database postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOSTNAME}/${DB_NAME} python_rest_template/database/migration/migration_files'
+                sh 'make migrate'
 
             }
         }
         stage('Test and lint') {
             steps {
-                sh '/root/.local/bin/poetry --version'
                 // Run linting
-                sh '/root/.local/bin/poetry run flake8'
+                sh 'make lint'
                 // Run tests
-                sh '/root/.local/bin/poetry run pytest -k="not integration_test"'
+                sh 'make test'
             }
         }
     }
