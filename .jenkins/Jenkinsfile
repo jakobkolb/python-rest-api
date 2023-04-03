@@ -102,16 +102,18 @@ pipeline {
                             # Setup login credentials for harbor. Note, you have to double escape the quotes because of
                             # https://stackoverflow.com/a/56596103
 
+                            export host=harbor-dev.tkpoc.it32.labor
+
                             export TOKEN=$(echo -n $username:$password | base64 -w 0)
-                            echo "{\\"auths\\":{\\"harbor.it32.labor\\":{\\"username\\":\\"$username\\",\\"password\\":\\"$password\\",\\"auth\\":\\"$TOKEN\\"}}}" > /kaniko/.docker/config.json
+                            echo "{\\"auths\\":{\\"$host\\":{\\"username\\":\\"$username\\",\\"password\\":\\"$password\\",\\"auth\\":\\"$TOKEN\\"}}}" > /kaniko/.docker/config.json
 
                             # Build and publish the image. Note you have to pass the proxy as build args.
 
                             /kaniko/executor \
                             --dockerfile=docker/Dockerfile \
                             --context=dir://. \
-                            --destination=harbor-dev.tkpoc.it32.labor/devops/dagster-poc-it24:latest \
-                            --skip-tls-verify-registry=harbor-dev.tkpoc.it32.labor \
+                            --destination=$host/devops/dagster-poc-it24:latest \
+                            --skip-tls-verify-registry=$host \
                             --build-arg "http_proxy=$HTTP_PROXY" \
                             --build-arg "https_proxy=$HTTPS_PROXY" \
                             --build-arg "HTTP_PROXY=$HTTP_PROXY" \
