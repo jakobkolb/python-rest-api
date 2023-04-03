@@ -102,7 +102,7 @@ pipeline {
                             # Setup login credentials for harbor. Note, you have to double escape the quotes because of
                             # https://stackoverflow.com/a/56596103
 
-                            export TOKEN=$(echo -n $username:$password | base64)
+                            export TOKEN=$(echo -n $username:$password | base64 -w 0)
                             echo "{\\"auths\\":{\\"harbor.it32.labor\\":{\\"username\\":\\"$username\\",\\"password\\":\\"$password\\",\\"auth\\":\\"$TOKEN\\"}}}" > /kaniko/.docker/config.json
 
                             # Build and publish the image. Note you have to pass the proxy as build args.
