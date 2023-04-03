@@ -110,8 +110,8 @@ pipeline {
                             /kaniko/executor \
                             --dockerfile=docker/Dockerfile \
                             --context=dir://. \
-                            --destination=harbor.it32.labor/devops/python-rest-template:latest \
-                            --skip-tls-verify-registry=harbor.it32.labor \
+                            --destination=harbor-dev.tkpoc.it32.labor/devops/dagster-poc-it24:latest \
+                            --skip-tls-verify-registry=harbor-dev.tkpoc.it32.labor \
                             --build-arg "http_proxy=$HTTP_PROXY" \
                             --build-arg "https_proxy=$HTTPS_PROXY" \
                             --build-arg "HTTP_PROXY=$HTTP_PROXY" \
