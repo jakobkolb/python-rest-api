@@ -11,6 +11,7 @@ pipeline {
                   labels:
                     jenkins: build-node
                 spec:
+                    serviceAccountName: jenkins
                     containers:
                     - name: python
                       image: ghcr.io/rocs-org/python-test-environment:latest
@@ -59,10 +60,15 @@ pipeline {
                           - user
                       resources:
                         requests:
-                          ephemeral-storage: 1Gi
+                          ephemeral-storage: 100Mi
+                    - name: helm
+                      image: alpine/helm:latest
+                      tty: true
+                      resources:
+                        requests:
+                          ephemeral-storage: 100Mi
                     - name: kaniko
                       image: gcr.io/kaniko-project/executor:debug
-                      imagePullPolicy: Always
                       command:
                         - cat
                       tty: true
@@ -78,6 +84,11 @@ pipeline {
                       resources:
                         requests:
                           ephemeral-storage: 1Gi
+                    tolerations:
+                    - key: "node.kubernetes.io/not-ready"
+                      operator: "Exists"
+                      effect: "NoExecute"
+                      tolerationSeconds: 900
                     restartPolicy: Never
                 """
             }
@@ -100,6 +111,14 @@ pipeline {
                 sh 'make lint'
                 // Run tests
                 sh 'make test'
+            }
+        }
+        stage('Helm tests') {
+            steps {
+                container('helm') {
+                    sh 'helm version'
+                    sh 'helm lint helm'
+                }
             }
         }
         stage('Build and publish') {
