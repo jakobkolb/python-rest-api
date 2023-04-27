@@ -11,7 +11,7 @@ pipeline {
                   labels:
                     jenkins: build-node
                 spec:
-                    serviceAccountName: jenkins
+                    serviceAccountName: service-account
                     containers:
                     - name: python
                       image: ghcr.io/rocs-org/python-test-environment:latest
