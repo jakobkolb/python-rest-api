@@ -119,6 +119,9 @@ pipeline {
             steps {
                 container('helm') {
                     sh 'helm version'
+                    sh 'helm upgrade --install python-rest-template charts/template -n jenkins-staging-scratch'
+                    sh 'helm test python-rest-template'
+                    sh 'helm uninstall python-rest-template'
                 }
             }
         }
