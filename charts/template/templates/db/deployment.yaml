@@ -32,6 +32,9 @@ spec:
               tier: backend
               release: postgres
         spec:
+          {{- if .Values.serviceAccount.create }}
+          serviceAccountName: {{ include "helm.fullname" . }}
+          {{- end }}
           containers:
             - name: postgres
               image: postgres:9.6
@@ -63,6 +66,7 @@ spec:
               volumeMounts:
               - name: postgres-persistent-storage
                 mountPath: /var/lib/postgresql/data
+                subPath: postgres
     volumeClaimTemplates:
     - metadata:
         name: postgres-persistent-storage

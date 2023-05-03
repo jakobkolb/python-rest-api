@@ -11,7 +11,6 @@ pipeline {
                   labels:
                     jenkins: build-node
                 spec:
-                    serviceAccountName: service-account
                     containers:
                     - name: python
                       image: ghcr.io/rocs-org/python-test-environment:latest
@@ -39,7 +38,7 @@ pipeline {
                       - containerPort: 8080
                       resources:
                         requests:
-                          ephemeral-storage: 1Gi
+                          ephemeral-storage: 500Mi
                     - name: postgres
                       image: postgres:latest
                       tty: true
