@@ -97,7 +97,6 @@ pipeline {
     stages {
         stage('Setup'){
             steps {
-                sh 'poetry --version'
                 // Checkout the code
                 checkout scm
                 // Install dependencies

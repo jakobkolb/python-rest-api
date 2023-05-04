@@ -8,6 +8,9 @@ metadata:
   annotations:
     "helm.sh/hook": test-success
 spec:
+  {{- if .Values.serviceAccount.create }}
+  serviceAccountName: {{ include "helm.fullname" . }}
+  {{- end }}
   containers:
     - name: wget
       image: busybox
