@@ -2,13 +2,16 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+serviceAccount:
+  create: true
+
 replicaCount: 1
 
 image:
   repository: ghcr.io/jakobkolb/python-rest-example
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v0.2.1"
+  tag: "v0.2.3"
 
 imagePullSecrets: []
 nameOverride: ""

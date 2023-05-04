@@ -22,8 +22,12 @@ spec:
         helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     spec:
       restartPolicy: OnFailure
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "helm.fullname" . }}
+      {{- end }}
       containers:
         - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           name: {{ .Release.Name }}-migrate
           command: ["migrate"]
           
