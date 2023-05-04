@@ -118,11 +118,11 @@ pipeline {
                 container('helm') {
                     catchError {
                         sh 'helm version'
-                        sh 'helm upgrade --install python-rest-template charts/template -n jenkins-staging-scratch'
-                        sh 'helm test python-rest-template -n jenkins-staging-scratch'
+                        sh 'helm upgrade --install rest-api-release-${BUILD_ID} charts/template -n jenkins-production-scratch'
+                        sh 'helm test rest-api-release-${BUILD_ID} -n jenkins-production-scratch'
                     }
-                    sh 'helm uninstall python-rest-template -n jenkins-staging-scratch'
-                    sh 'kubectl delete pvc postgres-persistent-storage-postgres-0 -n jenkins-staging-scratch'
+                    sh 'helm uninstall rest-api-release-${BUILD_ID} -n jenkins-production-scratch'
+                    sh 'kubectl delete pvc postgres-persistent-storage-postgres-0 -n jenkins-production-scratch'
                 }
             }
         }
@@ -157,5 +157,4 @@ pipeline {
             }
         }
     }
-
 }
