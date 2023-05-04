@@ -1,6 +1,7 @@
 import os
 import psycopg2
 import ramda as R
+import json
 
 from psycopg2.extensions import connection  # noqa: F401
 
@@ -48,7 +49,19 @@ def read_db_credentials_from_env() -> DBCredentials:
 
 
 def connect_to_db(credentials: DBCredentials) -> Connection:
-    return psycopg2.connect(connection_factory=Connection, **credentials)
+    try:
+        return psycopg2.connect(connection_factory=Connection, **credentials)
+    except psycopg2.OperationalError as e:
+        exeption = Exception(
+            f"""
+            Failed to connect to database.
+            Credentials used:
+            {json.dumps(credentials)}
+            Original error:
+            {e}
+            """
+        )
+        raise (exeption)
 
 
 _create_context_from_credentials = R.apply_spec(
