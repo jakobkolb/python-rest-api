@@ -38,7 +38,7 @@ pipeline {
                       - containerPort: 8080
                       resources:
                         requests:
-                          ephemeral-storage: 1Gi
+                          ephemeral-storage: 500Mi
                     - name: postgres
                       image: postgres:latest
                       tty: true
@@ -59,10 +59,17 @@ pipeline {
                           - user
                       resources:
                         requests:
-                          ephemeral-storage: 1Gi
+                          ephemeral-storage: 100Mi
+                    - name: helm
+                      image: dtzar/helm-kubectl:latest
+                      tty: true
+                      command:
+                        - cat
+                      resources:
+                        requests:
+                          ephemeral-storage: 100Mi
                     - name: kaniko
                       image: gcr.io/kaniko-project/executor:debug
-                      imagePullPolicy: Always
                       command:
                         - cat
                       tty: true
@@ -78,6 +85,11 @@ pipeline {
                       resources:
                         requests:
                           ephemeral-storage: 1Gi
+                    tolerations:
+                    - key: "node.kubernetes.io/not-ready"
+                      operator: "Exists"
+                      effect: "NoExecute"
+                      tolerationSeconds: 900
                     restartPolicy: Never
                 """
             }
@@ -85,7 +97,6 @@ pipeline {
     stages {
         stage('Setup'){
             steps {
-                sh 'poetry --version'
                 // Checkout the code
                 checkout scm
                 // Install dependencies
@@ -100,6 +111,19 @@ pipeline {
                 sh 'make lint'
                 // Run tests
                 sh 'make test'
+            }
+        }
+        stage('Helm tests') {
+            steps {
+                container('helm') {
+                    catchError {
+                        sh 'helm version'
+                        sh 'helm upgrade --install rest-api-release-${BUILD_ID} charts/template -n jenkins-production-scratch'
+                        sh 'helm test rest-api-release-${BUILD_ID} -n jenkins-production-scratch'
+                    }
+                    sh 'helm uninstall rest-api-release-${BUILD_ID} -n jenkins-production-scratch'
+                    sh 'kubectl delete pvc postgres-persistent-storage-postgres-0 -n jenkins-production-scratch'
+                }
             }
         }
         stage('Build and publish') {
