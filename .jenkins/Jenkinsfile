@@ -120,9 +120,9 @@ pipeline {
                     catchError {
                         sh 'helm version'
                         sh 'helm upgrade --install python-rest-template charts/template -n jenkins-staging-scratch'
-                        sh 'helm test python-rest-template'
+                        sh 'helm test python-rest-template -n jenkins-staging-scratch'
                     }
-                    sh 'helm uninstall python-rest-template'
+                    sh 'helm uninstall python-rest-template -n jenkins-staging-scratch'
                 }
             }
         }
