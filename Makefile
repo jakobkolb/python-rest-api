@@ -11,7 +11,7 @@ setup-db:
 
 dev:
 	make setup-db
-	poetry run uvicorn python_rest_template.main:app --reload
+	poetry run uvicorn src.main:app --reload --port 8080
 
 build:
 	docker build -t ${APP_IMAGE_TAG} -f docker/Dockerfile .
@@ -51,4 +51,4 @@ add-migration:
 	poetry run yoyo new -m ${name} --sql
 
 migrate:
-	poetry run yoyo apply --batch --no-config-file --database postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOSTNAME}/${DB_NAME} python_rest_template/database/migration/migration_files
+	poetry run yoyo apply --batch --no-config-file --database postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOSTNAME}/${DB_NAME} src/database/migration/migration_files

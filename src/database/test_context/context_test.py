@@ -1,6 +1,5 @@
 from os import environ
 
-import psycopg2
 import pytest
 import ramda as R
 
@@ -36,7 +35,7 @@ def test_teardown_test_context_deletes_working_db():
     teardown_test_db_context(db_context)
 
     # after teardown, db in test context is gone.
-    with pytest.raises(psycopg2.Error) as err:
+    with pytest.raises(Exception) as err:
         update_connection_in_context(db_context)
 
     assert f'database "{db_name}" does not exist' in str(err)
