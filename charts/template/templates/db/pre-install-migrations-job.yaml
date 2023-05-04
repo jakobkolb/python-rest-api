@@ -27,6 +27,7 @@ spec:
       {{- end }}
       containers:
         - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           name: {{ .Release.Name }}-migrate
           command: ["migrate"]
           
