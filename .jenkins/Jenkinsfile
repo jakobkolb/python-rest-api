@@ -61,7 +61,7 @@ pipeline {
                         requests:
                           ephemeral-storage: 100Mi
                     - name: helm
-                      image: alpine/helm:latest
+                      image: dtzar/helm-kubectl:latest
                       tty: true
                       command:
                         - cat
@@ -122,6 +122,7 @@ pipeline {
                         sh 'helm test python-rest-template -n jenkins-staging-scratch'
                     }
                     sh 'helm uninstall python-rest-template -n jenkins-staging-scratch'
+                    sh 'kubectl delete pvc postgres-persistent-storage-postgres-0 -n jenkins-staging-scratch'
                 }
             }
         }
