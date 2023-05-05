@@ -1,5 +1,6 @@
 import pytest
 import ramda as R
+import psycopg2
 
 from .context import (
     create_db_context,
@@ -21,11 +22,10 @@ def test_connecting_with_faulty_credentials_prints_error_and_raises():
         "port": 5432,
     }
 
-    with pytest.raises(Exception) as e:
+    with pytest.raises(psycopg2.OperationalError) as e:
         connect_to_db(faulty_credentials)
 
-    assert "Failed to connect to database" in str(e.value)
-    assert "Credentials used:" in str(e.value)
+    assert 'FATAL:  role "peter" does not exist' in str(e.value)
 
 
 def test_create_db_context_creates_context_containing_credentials_and_open_connection():
