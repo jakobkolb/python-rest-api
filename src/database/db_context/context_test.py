@@ -1,5 +1,6 @@
 import pytest
 import ramda as R
+import psycopg2
 
 from .context import (
     create_db_context,
@@ -7,8 +8,24 @@ from .context import (
     read_db_credentials_from_env,
     open_cursor,
     close_cursor,
+    connect_to_db,
 )
 from ..types import Cursor
+
+
+def test_connecting_with_faulty_credentials_prints_error_and_raises():
+    faulty_credentials = {
+        "user": "peter",
+        "password": "parker",
+        "database": "test_db",
+        "host": "localhost",
+        "port": 5432,
+    }
+
+    with pytest.raises(psycopg2.OperationalError) as e:
+        connect_to_db(faulty_credentials)
+
+    assert 'FATAL:  role "peter" does not exist' in str(e.value)
 
 
 def test_create_db_context_creates_context_containing_credentials_and_open_connection():

@@ -126,7 +126,7 @@ pipeline {
                 }
             }
         }
-        stage('Build and publish') {
+        stage('Build and publish staging image') {
             when {
                 branch 'main'
             }
@@ -145,7 +145,37 @@ pipeline {
                             /kaniko/executor \
                             --dockerfile=docker/Dockerfile \
                             --context=dir://. \
-                            --destination=$HARBOR_HOST/devops/python-rest-template:latest \
+                            --destination=$HARBOR_HOST/devops/python-rest-template:dev \
+                            --skip-tls-verify-registry=$HARBOR_HOST \
+                            --build-arg "http_proxy=$HTTP_PROXY" \
+                            --build-arg "https_proxy=$HTTPS_PROXY" \
+                            --build-arg "HTTP_PROXY=$HTTP_PROXY" \
+                            --build-arg "HTTPS_PROXY=$HTTPS_PROXY"
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Build and publish production image on new tag') {
+            when {
+                tag 'v*'
+            }
+            steps {
+                container('kaniko') {
+                    withCredentials([usernamePassword(credentialsId: 'harbor', usernameVariable: 'username', passwordVariable: 'password')]) {
+                        sh '''
+                            # Setup login credentials for harbor. Note, you have to double escape the quotes because of
+                            # https://stackoverflow.com/a/56596103
+
+                            export TOKEN=$(echo -n $username:$password | base64 -w 0)
+                            echo "{\\"auths\\":{\\"$HARBOR_HOST\\":{\\"username\\":\\"$username\\",\\"password\\":\\"$password\\",\\"auth\\":\\"$TOKEN\\"}}}" > /kaniko/.docker/config.json
+
+                            # Build and publish the image. Note you have to pass the proxy as build args.
+
+                            /kaniko/executor \
+                            --dockerfile=docker/Dockerfile \
+                            --context=dir://. \
+                            --destination=$HARBOR_HOST/devops/python-rest-template:${TAG_NAME} \
                             --skip-tls-verify-registry=$HARBOR_HOST \
                             --build-arg "http_proxy=$HTTP_PROXY" \
                             --build-arg "https_proxy=$HTTPS_PROXY" \
