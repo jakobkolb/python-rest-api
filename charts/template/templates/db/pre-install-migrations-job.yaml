@@ -11,7 +11,7 @@ metadata:
       helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
   annotations:
     "helm.sh/hook": post-install, post-upgrade
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
 spec:
   template:
     metadata:
@@ -26,7 +26,7 @@ spec:
       serviceAccountName: {{ include "helm.fullname" . }}
       {{- end }}
       containers:
-        - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        - image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           name: {{ .Release.Name }}-migrate
           command: ["migrate"]

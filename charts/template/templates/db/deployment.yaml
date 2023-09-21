@@ -63,6 +63,7 @@ spec:
               ports:
               - containerPort: 5432
                 name: postgres
+              {{- if .Values.database.persistence.enabled }}
               volumeMounts:
               - name: postgres-persistent-storage
                 mountPath: /var/lib/postgresql/data
@@ -75,6 +76,7 @@ spec:
         resources:
             requests:
               storage: 1Gi
+              {{- end }}
 ---
 # generate a secret for the postgres password
 apiVersion: v1
@@ -83,12 +85,16 @@ metadata:
   name: postgres-password
 type: Opaque
 data:
+  {{- if .Values.database.credentials.generatePassword }}
   # retrieve the secret data using lookup function and when not exists, return an empty dictionary / map as result
   {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace "postgres-password") | default dict }}
   {{- $secretData := (get $secretObj "data") | default dict }}
   # set $jwtSecret to existing secret data or generate a random one when not exists
   {{- $postgresSecret := (get $secretData "postgres-password") | default (randAlphaNum 32 | b64enc) }}
   postgres-password: {{ $postgresSecret | quote }}
+  {{- else}}
+  postgres-password: {{ .Values.database.credentials.password | b64enc }}
+  {{- end}}
 ---
 # configmap for the postgres database
 apiVersion: v1
@@ -96,7 +102,7 @@ kind: ConfigMap
 metadata:
   name: postgres
 data:
-  database: "postgres"
+  database: {{ .Values.database.dbName | quote }}
   host: "postgres"
-  user: "postgres"
+  user: {{ .Values.database.credentials.user | quote }}
   port: "5432"

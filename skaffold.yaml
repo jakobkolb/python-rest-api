@@ -1,0 +1,58 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: python-rest-api
+build:
+  artifacts:
+    - image: harbor-dev.tkpoc.it32.labor/devops/python-rest-template
+      kaniko:
+        cache:
+          cacheCopyLayers: true
+        dockerfile: docker/Dockerfile
+        skipTLSVerifyRegistry:
+          - harbor-dev.tkpoc.it32.labor
+        env:
+          - name: NO_PROXY
+            value: "*.it32.labor"
+        buildArgs:
+          http_proxy: fw-bln.rki.local:8020
+          https_proxy: fw-bln.rki.local:8020
+          HTTP_PROXY: fw-bln.rki.local:8020
+          HTTPS_PROXY: fw-bln.rki.local:8020
+          tag: "{{.IMAGE_TAG}}"
+  cluster:
+    HTTP_PROXY: 'fw-bln.rki.local:8020'
+    HTTPS_PROXY: 'fw-bln.rki.local:8020'
+    namespace: skaffold
+    serviceAccount: skaffold
+    dockerConfig:
+      secretName: docker-cfg
+    resources:
+      requests:
+        ephemeralStorage: 10G
+deploy:
+  helm:
+    releases:
+      - name: template
+        chartPath: charts/template
+        valuesFiles:
+          - charts/template/values.yaml
+        version: 0.2.1
+        setValueTemplates:
+          image.repository: "{{.IMAGE_REPO_harbor_dev_tkpoc_it32_labor_devops_python_rest_template}}"
+          image.tag: "{{.IMAGE_TAG_harbor_dev_tkpoc_it32_labor_devops_python_rest_template}}"
+          database.persistence.enabled: false
+          database.credentials.user: "{{.DB_USER}}"
+          database.credentials.password: "{{.DB_PASSWORD}}"
+          database.credentials.generatePassword: false
+          database.dbName: "{{.DB_NAME}}"
+
+profiles:
+  - name: dev
+    patches:
+      - op: add
+        path: /deploy/helm/releases/0/namespace
+        value: dev
+      - op: add
+        path: /deploy/helm/releases/0/createNamespace
+        value: true

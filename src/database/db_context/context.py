@@ -3,6 +3,7 @@ import psycopg2
 import ramda as R
 
 from psycopg2.extensions import connection  # noqa: F401
+from psycopg2.errors import OperationalError
 
 from src.database.types import (
     Connection,
@@ -48,7 +49,11 @@ def read_db_credentials_from_env() -> DBCredentials:
 
 
 def connect_to_db(credentials: DBCredentials) -> Connection:
-    return psycopg2.connect(connection_factory=Connection, **credentials)
+    try:
+        return psycopg2.connect(connection_factory=Connection, **credentials)
+    except OperationalError as e:
+        print(credentials)
+        raise e
 
 
 _create_context_from_credentials = R.apply_spec(

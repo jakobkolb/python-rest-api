@@ -8,7 +8,7 @@ serviceAccount:
 replicaCount: 1
 
 image:
-  repository: ghcr.io/jakobkolb/python-rest-example
+  repository: harbor-dev.tkpoc.it32.labor/devops/python-rest-template
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "v0.2.3"
@@ -71,3 +71,13 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+database:
+  persistence:
+    enabled: true
+  credentials:
+    user: 'postgres'
+    generatePassword: true
+    password: ''
+  dbName: 'postgres'
+

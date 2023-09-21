@@ -1,9 +1,10 @@
 import pathlib
 import sys
-from psycopg2 import OperationalError
 from logging import getLogger, WARNING
+from time import sleep
 
 import ramda as R
+from psycopg2 import OperationalError
 from yoyo import read_migrations, get_backend
 
 from src.database.types import DBContext
@@ -31,7 +32,14 @@ def migrate_all():
     from src.database.db_context import create_db_context, teardown_db_context
 
     try:
-        context = create_db_context()
+        context = None
+        while context is None:
+            try:
+                context = create_db_context()
+            except AttributeError:
+                print('Waiting for db connection...')
+                sleep(1)
+
         migrate(context)
     except OperationalError as e:
         print(str(e))

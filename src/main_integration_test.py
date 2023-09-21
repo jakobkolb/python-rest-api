@@ -13,7 +13,10 @@ def hostname():
 
 def test_api_returns_200_on_health_endpoint(hostname):
 
-    response = requests.get(f"{hostname}/health")
+    health_endpoint = f"{hostname}/health"
+    response = requests.get(health_endpoint)
+    print(health_endpoint)
+    print(response.text)
     assert response.status_code == 200
 
 
